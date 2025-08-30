@@ -544,3 +544,45 @@ body {
     max-height: 300px;
   }
 }
+
+/* Share button */
+.share-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.share-btn:hover {
+  background-color: #1976d2;
+}
+
+.share-btn .material-icons {
+  font-size: 14px;
+}
+
+/* Responsive - en móvil apilar botones */
+@media (max-width: 768px) {
+  .share-btn {
+    margin-left: 0;
+    margin-top: 8px;
+    display: block;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .edit-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}

@@ -5,6 +5,64 @@ import { useState, useEffect } from "https://esm.sh/preact@10.19.3/hooks";
 // Importar Supabase
 import { supabase } from "./supabase.js";
 
+// Helper para notificaciones
+function showToast(message, type = "info") {
+  const colors = {
+    success: "#4caf50",
+    error: "#f44336",
+    info: "#2196f3",
+    warning: "#ff9800",
+  };
+
+  Toastify({
+    text: message,
+    duration: 3000,
+    gravity: "top",
+    position: "right",
+    backgroundColor: colors[type],
+    stopOnFocus: true,
+  }).showToast();
+}
+
+// Función para compartir evento
+const shareEvent = async (event) => {
+  const shareData = {
+    title: `${event.description}`,
+    text: `${event.description} - ${event.location}\n📅 ${new Date(
+      event.event_date
+    ).toLocaleDateString("es-MX", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`,
+    url: `${window.location.origin}${window.location.pathname}?event=${event.id}`,
+  };
+
+  try {
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare(shareData)
+    ) {
+      // Móvil/navegadores que soportan Web Share API
+      await navigator.share(shareData);
+      showToast("Evento compartido", "success");
+    } else {
+      // Desktop - copiar al clipboard
+      const textToShare = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+      await navigator.clipboard.writeText(textToShare);
+      showToast("Información copiada al portapapeles", "success");
+    }
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      showToast("Error al compartir", "error");
+    }
+  }
+};
+
 // Componente de Login
 function LoginForm({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -297,6 +355,7 @@ function EditEventModal({ event, isOpen, onClose, onSave }) {
         }
 
         console.log("Uploading file:", fileName, imageFile);
+        showToast("Subiendo imagen...", "info");
 
         const { data, error } = await supabase.storage
           .from("event-images")
@@ -328,6 +387,7 @@ function EditEventModal({ event, isOpen, onClose, onSave }) {
 
       onSave();
       onClose();
+      showToast("Evento guardado correctamente", "success");
     } catch (error) {
       alert("Error al guardar: " + error.message);
     } finally {
@@ -499,7 +559,17 @@ function EventCard({ event, isAdmin, onEdit }) {
             onClick: () => onEdit(event),
           },
           "Editar"
-        )
+        ),
+      // Botón Compartir (siempre visible)
+      h(
+        "button",
+        {
+          className: "share-btn",
+          onClick: () => shareEvent(event),
+        },
+        h("span", { className: "material-icons" }, "share"),
+        " Compartir"
+      )
     )
   );
 }
